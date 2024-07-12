@@ -33,19 +33,34 @@ public class LocalizacaoController {
 	public List<Localizacao> buscarPontos(){
 		return this.localizacaoDAO.buscarTodosOsPontos();
 	}
+	
+	public boolean cadastrarPonto(String nome, double latitude, double longitude) {
+		return this.localizacaoDAO.cadastrarPonto(nome, latitude, longitude);
+	}
+	
+	public boolean removerPonto(int idLocalizacao) throws Exception {
+		return this.localizacaoDAO.removerLocalizacao(idLocalizacao);
+	}
+	
+	public boolean atualizarPonto(Localizacao entidade) throws Exception {
+		return this.localizacaoDAO.atualizarLocalizacao(entidade);
+	}
 
-	public void calcularDistanciaEntrePontos(int idLocal) throws Exception {
+	public Localizacao buscarLocalizacaoPorId(int idLocal) throws Exception {
+		return this.localizacaoDAO.buscarLocalizacao(idLocal);
+	}
+	
+	
+	
+	public void calcularDistanciaEntrePontos(double latitude, double longitude) throws Exception {
 		EntityManager em = new ConnectionFactory().getConnection();
-
-		String[] pontoFixo = retornaVetorCordenadas(this.localizacaoDAO.buscarLocalizacao(idLocal).getCoordenadas());
 
 		for (Localizacao ponto : this.localizacaoDAO.buscarTodosOsPontos()) {
 			String[] pontoCadastrado = retornaVetorCordenadas(ponto.getCoordenadas());
 
-			double distancia = calcularDistancia(Double.parseDouble(pontoFixo[2]),
-					Double.parseDouble(pontoFixo[3]), Double.parseDouble(pontoCadastrado[2]),
+			double distancia = calcularDistancia(latitude, longitude, Double.parseDouble(pontoCadastrado[2]),
 					Double.parseDouble(pontoCadastrado[3]));
-			System.out.println("Distância entre o ponto fixo e o ponto com ID " + ponto.getNome() + ": " + distancia + "Km");
+			System.out.println("Distância entre o ponto fixo e o ponto " + ponto.getNome() + ": " + distancia + "Km");
 		}
 
 	}
@@ -53,16 +68,16 @@ public class LocalizacaoController {
 	public static double calcularDistancia(double x1, double y1, double x2, double y2) {
 		final int RAIO_TERRA = 6371;
 
-		double x1Rad = Math.toRadians(x1);
-		double y1Rad = Math.toRadians(y1);
-		double x2Rad = Math.toRadians(x2);
-		double y2Rad = Math.toRadians(y2);
+		double x01 = Math.toRadians(x1);
+		double y01 = Math.toRadians(y1);
+		double x02 = Math.toRadians(x2);
+		double y02 = Math.toRadians(y2);
 
-		double diffX = x2Rad - x1Rad;
-		double diffY = y2Rad - y1Rad;
+		double diferencaX = x02 - x01;
+		double diferencaY = y02 - y01;
 
-		double a = Math.pow(Math.sin(diffX / 2), 2)
-				+ Math.cos(x1Rad) * Math.cos(x2Rad) * Math.pow(Math.sin(diffY / 2), 2);
+		double a = Math.pow(Math.sin(diferencaX / 2), 2)
+				+ Math.cos(x01) * Math.cos(x02) * Math.pow(Math.sin(diferencaY / 2), 2);
 
 		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 

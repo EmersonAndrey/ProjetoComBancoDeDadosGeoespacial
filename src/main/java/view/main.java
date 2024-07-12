@@ -1,59 +1,124 @@
 package view;
 
-import java.util.List;
 import java.util.Scanner;
 
-import controller.LocalizacaoController;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.io.WKTReader;
+
+import controller.FuncoesMenuController;
 import model.Localizacao;
 
 public class main {
 
-	public static void main(String[] args) {	
+	public static void main(String[] args) {
 		Scanner entrada = new Scanner(System.in);
-		
+
 		boolean sair = false;
-		while(!sair) {
-			System.out.println("Escola uma opcao");
+		while (!sair) {
+			System.out.println("MENU");
 			System.out.println("[1] Cadastrar");
 			System.out.println("[2] Listar");
 			System.out.println("[3] Atualizar");
 			System.out.println("[4] Remover");
-			System.out.println("[5] Sair");
-			
-			System.out.println("Escolhe uma opcao");
+			System.out.println("[5] Calcular distância");
+			System.out.println("[6] Sair");
+
+			System.out.print("Escolhe uma opcao: ");
 			String opcao = entrada.nextLine();
-			
-			List<Localizacao> todosPontos = LocalizacaoController.getInstance().buscarPontos();
-			
-			switch(opcao) {
-				case "1":
-					break;
-				case "2":
-					
-					for(int i = 0; i < todosPontos.size(); i++) {
-						System.out.println("["+ (i+1) +"] " + todosPontos.get(i).getNome());
-					}
-					break;
-				case "3":
-					break;
-				case "4":
-					System.out.println("Escolhe uma opcao para remover");
-					String opcaoRemover = entrada.nextLine();
-					
-					break;
-					
-				case "5":
-					sair = true;
-					break;
-				default:
-					System.out.println("Escolhe uma opcao bixiga");
+
+			switch (opcao) {
+			case "1":
+				System.out.println("Digite um nome, latitude e longitude para cadastrar um ponto");
+				String nome = entrada.nextLine();
+				double latitude = Double.parseDouble(entrada.nextLine());
+				double longitude = Double.parseDouble(entrada.nextLine());
+
+				if (FuncoesMenuController.getInstance().cadastrarPonto(nome, latitude, longitude)) {
+					System.out.println("Ponto cadastrado com sucesso");
+				}
+				break;
 				
+				
+				
+
+			case "2":
+				FuncoesMenuController.getInstance().listaTodosOsPontosCad();
+				break;
+
+			case "3":
+				FuncoesMenuController.getInstance().listaTodosOsPontosCad();
+				System.out.print("Digite o id do ponto que deseja atualizar: ");
+				int idAtualizar = Integer.parseInt(entrada.nextLine());
+
+				Localizacao localizacao = null;
+
+				try {
+					localizacao = FuncoesMenuController.getInstance().buscarLocalizacaoPorId(idAtualizar);
+
+				} catch (Exception e) {
+
+				}
+
+				System.out.println("Digite um nome, latitude e longitude para atualizar um ponto");
+				String nomeAtualizar = entrada.nextLine();
+				double latitudeAtualizar = Double.parseDouble(entrada.nextLine());
+				double longitudeAtualizar = Double.parseDouble(entrada.nextLine());
+
+				localizacao.setNome(nomeAtualizar);
+
+				try {
+					localizacao.setCoordenadas((Point) new WKTReader()
+							.read("POINT (" + latitudeAtualizar + " " + longitudeAtualizar + ")"));
+
+					FuncoesMenuController.getInstance().atualizarPonto(localizacao);
+
+				} catch (Exception e) {
+				}
+
+				System.out.println("Ponto atualizado com sucesso");
+				break;
+
+				
+				
+				
+				
+			case "4":
+				FuncoesMenuController.getInstance().listaTodosOsPontosCad();
+				System.out.print("Escolhe uma opcao para remover: ");
+				int opcaoRemover = Integer.parseInt(entrada.nextLine());
+
+				try {
+					FuncoesMenuController.getInstance().removerPonto(opcaoRemover);
+
+				} catch (Exception e) {
+					System.out.println("Não foi possível remover o ponto");
+				}
+
+				break;
+				
+			case "5":
+				System.out.println("Informe sua localizacao atual(latitude e longitude):");
+				double latitudeFixo = Double.parseDouble(entrada.nextLine());
+				double longitudeFixo = Double.parseDouble(entrada.nextLine());
+				
+				try {
+					FuncoesMenuController.getInstance().calcularDistanciaEntrePontos(latitudeFixo, longitudeFixo);
+				
+				} catch (Exception e) {}
+				break;
+				
+
+			case "6":
+				sair = true;
+				break;
+
+			default:
+				System.out.println("Escolha uma opção válida");
+
 			}
-				
-			
+
 		}
-		
-		
+
 	}
 
 }

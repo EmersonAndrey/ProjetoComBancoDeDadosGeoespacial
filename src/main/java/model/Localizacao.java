@@ -20,6 +20,7 @@ public class Localizacao {
 
     private String nome;
 
+    //Define como um ponto geografico no banco de dados
     @Column(columnDefinition = "geometry(Point, 4326)")
     private Point coordenadas;
 
