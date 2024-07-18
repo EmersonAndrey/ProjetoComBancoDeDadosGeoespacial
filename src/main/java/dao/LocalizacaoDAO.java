@@ -3,22 +3,21 @@ package dao;
 import java.util.List;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 import connection.ConnectionFactory;
-
-
 import model.Localizacao;
 
 public class LocalizacaoDAO implements LocalizacaoDAOInterface{
 
 	private static volatile LocalizacaoDAO instance;
+	
+	 private static final int SRID = 4326; 
 	
 	private LocalizacaoDAO() {
 		
@@ -43,7 +42,12 @@ public class LocalizacaoDAO implements LocalizacaoDAOInterface{
 		localizacao.setNome(nome);
 		
 		try {
-			localizacao.setCoordenadas((Point) new WKTReader().read("POINT ("+ latitude +" "+ longitude +")"));
+			GeometryFactory geometryFactory = new GeometryFactory();
+
+            Point point = (Point) new WKTReader(geometryFactory).read("POINT (" + latitude + " " + longitude + ")");
+            point.setSRID(SRID);
+            localizacao.setCoordenadas(point);
+            
 			em.getTransaction().begin();
 			em.persist(localizacao);
 			em.getTransaction().commit();

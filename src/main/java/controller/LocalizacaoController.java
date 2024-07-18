@@ -1,8 +1,10 @@
 package controller;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 
 import org.locationtech.jts.geom.Geometry;
 
@@ -11,14 +13,14 @@ import dao.LocalizacaoDAO;
 import model.Localizacao;
 
 public class LocalizacaoController {
-	
+
 	private static volatile LocalizacaoController instance;
 	private LocalizacaoDAO localizacaoDAO = LocalizacaoDAO.getInstance();
-	
+
 	private LocalizacaoController() {
-		
+
 	}
-	
+
 	public static LocalizacaoController getInstance() {
 		if (instance == null) {
 			synchronized (LocalizacaoController.class) {
@@ -29,19 +31,19 @@ public class LocalizacaoController {
 		}
 		return instance;
 	}
-	
-	public List<Localizacao> buscarPontos(){
+
+	public List<Localizacao> buscarPontos() {
 		return this.localizacaoDAO.buscarTodosOsPontos();
 	}
-	
+
 	public boolean cadastrarPonto(String nome, double latitude, double longitude) {
 		return this.localizacaoDAO.cadastrarPonto(nome, latitude, longitude);
 	}
-	
+
 	public boolean removerPonto(int idLocalizacao) throws Exception {
 		return this.localizacaoDAO.removerLocalizacao(idLocalizacao);
 	}
-	
+
 	public boolean atualizarPonto(Localizacao entidade) throws Exception {
 		return this.localizacaoDAO.atualizarLocalizacao(entidade);
 	}
@@ -49,44 +51,59 @@ public class LocalizacaoController {
 	public Localizacao buscarLocalizacaoPorId(int idLocal) throws Exception {
 		return this.localizacaoDAO.buscarLocalizacao(idLocal);
 	}
-	
-	
-	
+
 	public void calcularDistanciaEntrePontos(double latitude, double longitude) throws Exception {
 		EntityManager em = new ConnectionFactory().getConnection();
 
-		for (Localizacao ponto : this.localizacaoDAO.buscarTodosOsPontos()) {
-			String[] pontoCadastrado = retornaVetorCordenadas(ponto.getCoordenadas());
+//		String queryString = "SELECT l.nome, " + "ST_Distance(l.coordenadas, "
+//				+ "ST_SetSRID(ST_MakePoint(?, ?), 4326)) AS distance_meters " + "FROM localizacoes l";
+		
+		String queryString = "SELECT l.nome, " +
+                "ST_Distance(" +
+                "ST_Transform(l.coordenadas, 3857), " +
+                "ST_Transform(ST_SetSRID(ST_MakePoint(?, ?), 4326), 3857))" +
+                "FROM localizacoes l";
 
-			double distancia = calcularDistancia(latitude, longitude, Double.parseDouble(pontoCadastrado[2]),
-					Double.parseDouble(pontoCadastrado[3]));
-			System.out.println("Distância entre o ponto fixo e o ponto " + ponto.getNome() + ": " + distancia + "Km");
+		Query query = em.createNativeQuery(queryString);
+		query.setParameter(1, latitude);
+		query.setParameter(2, longitude);
+
+		List<Localizacao[]> results = query.getResultList();
+
+		DecimalFormat metrosFormatados = new DecimalFormat("#.##");
+
+		for (Object[] result : results) {
+			String nome = (String) result[0];
+			Double distancia = ((Number) result[1]).doubleValue() / 1000;
+			String distanciaFormatada = metrosFormatados.format(distancia);
+			System.out.println("Local: " + nome + ", Distancia: " + distanciaFormatada + "Km");
 		}
 
+		em.close();
+
+	}
+	
+
+
+	public void calcularDistanciaEntrePontosPorRaio(double longitude, double latitude) {
+		EntityManager em = new ConnectionFactory().getConnection();
+		
+		String querieString = "SELECT nome, ST_AsText(coordenadas) FROM localizacoes WHERE ST_DWithin(coordenadas, ST_SetSRID(ST_MakePoint(?, ?), 4326), 500)";
+		
+		Query query = em.createNativeQuery(querieString);
+		query.setParameter(1, longitude);
+		query.setParameter(2, latitude);
+		
+		List<Localizacao[]> results = query.getResultList();
+
+		for (Object[] result : results) {
+			String nome = (String) result[0];
+			String ponto = (String)(result[1]);
+			System.out.println("Local: " + nome + ", Coordenadas: " + ponto);
+		}
+
+		em.close();
+		
 	}
 
-	public static double calcularDistancia(double x1, double y1, double x2, double y2) {
-		final int RAIO_TERRA = 6371;
-
-		double x01 = Math.toRadians(x1);
-		double y01 = Math.toRadians(y1);
-		double x02 = Math.toRadians(x2);
-		double y02 = Math.toRadians(y2);
-
-		double diferencaX = x02 - x01;
-		double diferencaY = y02 - y01;
-
-		double a = Math.pow(Math.sin(diferencaX / 2), 2)
-				+ Math.cos(x01) * Math.cos(x02) * Math.pow(Math.sin(diferencaY / 2), 2);
-
-		double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-		double distanciaEmQuilometros = RAIO_TERRA * c;
-
-		return Math.round(distanciaEmQuilometros * 100.0) / 100.0;
-	}
-
-	public static String[] retornaVetorCordenadas(Geometry coordenada) {
-		return coordenada.toString().split("[\\s()]");
-	}
 }

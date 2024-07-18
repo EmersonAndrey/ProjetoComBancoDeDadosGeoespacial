@@ -12,6 +12,8 @@ public class main {
 
 	public static void main(String[] args) {
 		Scanner entrada = new Scanner(System.in);
+		
+		//CADASTRAR: Pousada Bela Vista, -7.889737579924742, -37.109802189537135
 
 		boolean sair = false;
 		while (!sair) {
@@ -38,12 +40,11 @@ public class main {
 				}
 				break;
 				
-				
-				
 
 			case "2":
 				FuncoesMenuController.getInstance().listaTodosOsPontosCad();
 				break;
+				
 
 			case "3":
 				FuncoesMenuController.getInstance().listaTodosOsPontosCad();
@@ -77,11 +78,8 @@ public class main {
 
 				System.out.println("Ponto atualizado com sucesso");
 				break;
+				
 
-				
-				
-				
-				
 			case "4":
 				FuncoesMenuController.getInstance().listaTodosOsPontosCad();
 				System.out.print("Escolhe uma opcao para remover: ");
@@ -96,18 +94,30 @@ public class main {
 
 				break;
 				
+
 			case "5":
+				System.out.println("Como deseja calcular a distancia? (Por raio ou Linear): ");
+				System.out.println("[1] Linear");
+				System.out.println("[2] Raio");
+				int formaCalcularDistancia = Integer.parseInt(entrada.nextLine());
+				
 				System.out.println("Informe sua localizacao atual(latitude e longitude):");
 				double latitudeFixo = Double.parseDouble(entrada.nextLine());
 				double longitudeFixo = Double.parseDouble(entrada.nextLine());
-				
-				try {
-					FuncoesMenuController.getInstance().calcularDistanciaEntrePontos(latitudeFixo, longitudeFixo);
-				
-				} catch (Exception e) {}
-				break;
-				
 
+				if (formaCalcularDistancia == 1) {
+					try {
+						FuncoesMenuController.getInstance().calcularDistanciaEntrePontos(latitudeFixo, longitudeFixo);
+
+					} catch (Exception e) {}
+					
+				}else {
+					FuncoesMenuController.getInstance().calcularDistanciaEntrePontosPorRaio(latitudeFixo, longitudeFixo);
+				}
+
+				break;
+
+				
 			case "6":
 				sair = true;
 				break;

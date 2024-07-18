@@ -54,4 +54,8 @@ public class FuncoesMenuController {
 		LocalizacaoController.getInstance().calcularDistanciaEntrePontos(longitude, latitude);
 	}
 	
+	public void calcularDistanciaEntrePontosPorRaio(double latitude, double longitude) {
+		LocalizacaoController.getInstance().calcularDistanciaEntrePontosPorRaio(longitude, latitude);
+	}
+	
 }
