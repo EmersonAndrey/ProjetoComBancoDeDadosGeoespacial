@@ -11,6 +11,8 @@ public interface LocalizacaoDAOInterface {
 	List<Localizacao> buscarTodosOsPontos();
 	boolean removerLocalizacao(int idLocalizacao) throws Exception;
 	boolean atualizarLocalizacao(Localizacao entidade) throws Exception;
+	void calcularDistanciaEntrePontos(double latitude, double longitude);
+	void calcularDistanciaEntrePontosPorRaio(double latitude, double longitude);
 	
 }
 
